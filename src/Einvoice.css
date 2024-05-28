@@ -1,0 +1,141 @@
+.invoice-border {
+  /* background-color: #0dcaf0; */
+  width: 70%;
+  height: auto;
+  margin: 0 auto;
+  border: solid 2px #1f194c;
+}
+
+.invoice-body {
+  /* background-color:#6f6f6f; */
+  width: 96%;
+  margin: 20px auto;
+  border: solid 1px #1f194c;
+  padding: 10px;
+}
+
+.invoice-body-top {
+  display: flex;
+  justify-content: space-between;
+}
+
+.qr-img {
+  width: 7rem;
+  height: 7rem;
+}
+
+.details {
+  /* background-color: #0dcaf0; */
+  margin-top: 10px;
+  width: 100%;
+  height: auto;
+  border: solid 1px #1f194c;
+  border-radius: 7px;
+}
+
+.details h5 {
+  justify-content: left;
+  margin: 7px;
+}
+
+.details .details-content {
+  padding: 5px;
+  display: flex;
+  justify-content: space-between;
+  text-align: justify;
+}
+
+.party-details-content {
+  padding: 5px;
+  /* display: flex; */
+  justify-content: space-between;
+  text-align: justify;
+}
+
+.invoice-border span {
+  font-weight: 700;
+}
+
+.party-details {
+  display: flex;
+  justify-content: space-between;
+}
+
+.vertical {
+  width: 1px;
+  height: auto; /* Adjust height as needed */
+  background-color: #ccc; /* Color of the vertical line */
+  margin: 0 10px; /* Adjust margin as needed */
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.invoice-footer {
+  display: flex;
+  justify-content: space-between;
+}
+
+.goods-table {
+  overflow-x: auto;
+  table-layout: fixed;
+}
+
+.cell-padding {
+  padding: 2px; /* Adjust the padding size as needed */
+}
+
+@media screen and (max-width: 1386px) {
+  .invoice-border {
+    width: 100%;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .qr-img {
+    width: 80px;
+    height: 80px;
+  }
+
+  .invoice-body-top {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .vertical {
+    display: inline-block;
+    height: 50px;
+    margin: 0 5px;
+  }
+}
+
+@media print {
+  body {
+    margin: 0;
+    padding: 0;
+    font-size: 12pt; /* Adjust font size as needed */
+  }
+
+  .invoice-border {
+    width: 250mm; /* A4 width */
+    height: 297mm; /* A4 height */
+    /* margin: 0 auto; */
+  }
+
+  .goods-table {
+    width: 100%;
+    overflow: visible;
+  }
+
+  .invoice-body {
+    width: 95%;
+    margin: 10mm auto; /* Adjust margin as needed */
+  }
+
+  .details {
+    width: 100%;
+  }
+
+  .invoice-footer {
+    margin-top: 5mm; /* Adjust margin as needed */
+  }
+}
