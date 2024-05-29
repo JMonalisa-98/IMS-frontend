@@ -40,11 +40,11 @@ import TermsCondition from "../gateway/TermsCondition";
 import GstCards from "../accounts/GstCards";
 import StepperAddMultiVehicles from "../accounts/StepperAddMultiVehicles";
 import StepperChangeMultiVehicle from "../accounts/StepperChangeMultiVehicles";
-import UpdateCode from "../accounts/UpdateCode";
 import GenerateEway from '../accounts/GenerateEway'
 import StepperGenConsolidatedEwayBill from "../accounts/StepperGenConsolidatedEwayBill";
 import StepperEwayIrn from "../accounts/StepperEwayIrn";
 import StepperImvMovement from "../accounts/StepperImvMovement";
+import StepperUpdateVehicleNumber from "../accounts/StepperUpdateVehicleNumber";
 
 const MainRouting = () => {
   return (
@@ -88,7 +88,7 @@ const MainRouting = () => {
       <Route path="/gst/imv-movement" element={<StepperImvMovement />} />
       <Route path="/gst/add-multi-vehicles" element={<StepperAddMultiVehicles />} />
       <Route path="/gst/change-multi-vehicles" element={<StepperChangeMultiVehicle />} />
-      <Route path="/gst/e-way-update" element={<UpdateCode/>} />
+      <Route path="/gst/e-way-update-vehicle-number" element={<StepperUpdateVehicleNumber/>} />
       <Route path="/gst/e-way-generate" element={<GenerateEway/>} />
       <Route path="/gst/gen-consolidated-e-way-bill" element={<StepperGenConsolidatedEwayBill />} />
 

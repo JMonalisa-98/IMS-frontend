@@ -7,7 +7,6 @@ import { IoMdCloseCircleOutline } from "react-icons/io";
 
 import {
   Typography,
-  TextField,
   Button,
   Stepper,
   Step,
@@ -27,6 +26,7 @@ const EwayIrn = ({ state,setOpenError, setErrorMsg }) => {
   const classes = useStyles();
   const [activeStep, setActiveStep] = useState(0);
   const steps = getSteps();
+
   const handleNext = () => {
     setActiveStep(activeStep + 1);
   };
@@ -35,6 +35,10 @@ const EwayIrn = ({ state,setOpenError, setErrorMsg }) => {
     setActiveStep(activeStep - 1);
   };
 
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
 
   const navigation = useNavigate();
 
@@ -65,6 +69,54 @@ const EwayIrn = ({ state,setOpenError, setErrorMsg }) => {
     }
   });
 
+  const handleSave = async () => {
+    await axios
+      .post("http://localhost:3500/irn/generate-eway-bill", {
+        formData: formData,
+        auth: state,
+      })
+      .then((res) => {
+        if (res.data.ErrorDetails) {
+          if (res.data.ErrorDetails[0]?.ErrorMessage === "Invalid Token") {
+            navigation("/gst/e-invoice-auth");
+          } else {
+            alert(res.data.ErrorDetails[0]?.ErrorMessage);
+          }
+        } else {
+          if (res.data.AckDt) {
+            // console.log(res.data);
+          } else {
+            if (res.data.error.errorCodes) {
+              const output = res.data.error.errorCodes;
+
+              const outputArray = output
+                .split(",")
+                .map((item) => parseInt(item.trim()));
+
+              const errorMessages = [];
+              outputArray.forEach((code) => {
+                const error = errorCodes.find(
+                  (entry) => Object.keys(entry)[0] === code.toString()
+                );
+                if (error) {
+                  errorMessages.push(Object.values(error)[0]);
+                } else {
+                  errorMessages.push(
+                    `Error message for code ${code} not found`
+                  );
+                }
+              });
+              setOpenError(true);
+              setErrorMsg(errorMessages);
+            }
+          }
+        }
+      })
+      .catch((err) => console.error(err));
+  };
+  const handleSubmit = (e) => {
+    e.preventDefault();
+  };
 
   const [documentDate, setDocumentDate] = useState("");
   const handleTransInput = (e) => {
@@ -531,9 +583,7 @@ const EwayIrn = ({ state,setOpenError, setErrorMsg }) => {
     }
   }
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-  };
+ 
 
 //   const saveIrn = async (AckDt, AckNo, Irn, SignedInvoice, SignedQRCode) => {
 //     await axios.post("http://localhost:3500/save-irn", {
@@ -545,51 +595,7 @@ const EwayIrn = ({ state,setOpenError, setErrorMsg }) => {
 //     });
 //   };
 
-  const handleSave = async () => {
-    await axios
-      .post("http://localhost:3500/irn/generate-eway-bill", {
-        formData: formData,
-        auth: state,
-      })
-      .then((res) => {
-        if (res.data.ErrorDetails) {
-          if (res.data.ErrorDetails[0]?.ErrorMessage === "Invalid Token") {
-            navigation("/gst/e-invoice-auth");
-          } else {
-            alert(res.data.ErrorDetails[0]?.ErrorMessage);
-          }
-        } else {
-          if (res.data.AckDt) {
-            console.log(res.data);
-          } else {
-            if (res.data.error.errorCodes) {
-              const output = res.data.error.errorCodes;
-
-              const outputArray = output
-                .split(",")
-                .map((item) => parseInt(item.trim()));
-
-              const errorMessages = [];
-              outputArray.forEach((code) => {
-                const error = errorCodes.find(
-                  (entry) => Object.keys(entry)[0] === code.toString()
-                );
-                if (error) {
-                  errorMessages.push(Object.values(error)[0]);
-                } else {
-                  errorMessages.push(
-                    `Error message for code ${code} not found`
-                  );
-                }
-              });
-              setOpenError(true);
-              setErrorMsg(errorMessages);
-            }
-          }
-        }
-      })
-      .catch((err) => console.error(err));
-  };
+ 
 
   return (
     <div style={{ background: "#F8F6F2", padding: "0" }}>

@@ -17,7 +17,6 @@ function StepperEwayIrn() {
   const navigation = useNavigate();
   const [openError, setOpenError] = useState(false);
   const [errorMsg, setErrorMsg] = useState([]);
-
   const { state } = useLocation();
 
 
@@ -84,7 +83,7 @@ function StepperEwayIrn() {
 
                 <div className="row g-3 mt-3 mb-5">
                   <ul>
-                    {errorMsg.slice(0, -1).map((item) => (
+                    {errorMsg.map((item) => (
                       <li style={{ color: "red" }} key={item}>
                         {item}
                       </li>
@@ -118,6 +117,7 @@ function StepperEwayIrn() {
               </div>
             </div>
           ) : null}
+
           <div id="stepper">
             <div className="layout-1">
               <SideBar navClick={navClick} side={side} />
@@ -151,7 +151,6 @@ function StepperEwayIrn() {
                       >
                         Back
                       </button>
-                      {/* <button>Get IRN Details by Document Id</button> */}
                     </div>
                   </div>
                   <div>

@@ -85,7 +85,7 @@ function StepperBillCode() {
 
                 <div className="row g-3 mt-3 mb-5">
                   <ul>
-                    {errorMsg.slice(0, -1).map((item) => (
+                    {errorMsg.map((item) => (
                       <li style={{ color: "red" }} key={item}>
                         {item}
                       </li>

@@ -1,17 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import "../../Styles.css";
-import { useLocation, useNavigate } from "react-router-dom";
-import DeleteIcon from "@mui/icons-material/Delete";
-import { IconButton } from "@mui/material";
-import AddCircleOutlineOutlinedIcon from "@mui/icons-material/AddCircleOutlineOutlined";
+import { useNavigate } from "react-router-dom";
+import { errorCodes } from "./ErrorCodes";
 
 import {
   Typography,
-  TextField,
   Button,
   Stepper,
   Step,
-  StepLabel,
 } from "@material-ui/core";
 import axios from "axios";
 
@@ -23,7 +19,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const ImvMovement = ({ state }) => {
+const ImvMovement = ({ state, setOpenError,errorMsg, setErrorMsg }) => {
   const classes = useStyles();
   const [activeStep, setActiveStep] = useState(0);
   const steps = getSteps();
@@ -36,6 +32,7 @@ const ImvMovement = ({ state }) => {
   const handleBack = () => {
     setActiveStep(activeStep - 1);
   };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
@@ -57,10 +54,6 @@ const ImvMovement = ({ state }) => {
     unitCode: ""
   });
 
-
-
-
-  
   const handleSave = async () => {
     await axios
       .post(`http://localhost:3500/generate-imv-movement`, {
@@ -72,19 +65,41 @@ const ImvMovement = ({ state }) => {
           if (res.data.ErrorDetails[0]?.ErrorMessage === "Invalid Token") {
             navigation("/gst/e-invoice-auth");
           } else {
-            console.log(res.data.ErrorDetails[0]?.ErrorMessage);
-          }}
-        //  else {
-        //   if (res.data.AckDt) {
-        //     saveIrn(
-        //       res.data.AckDt,
-        //       res.data.AckNo,
-        //       res.data.Irn,
-        //       res.data.SignedInvoice,
-        //       res.data.SignedQRCode
-        //     );
-        //   }
-        // }
+            errorMsg.push(res.data.ErrorDetails[0]?.ErrorMessage);
+          }
+        } else {
+          if (res.data.AckDt) {
+            console.log(res.data)
+          } else if(res.data.errorMessage){
+            errorMsg.push(res.data.errorMessage)
+            setOpenError(true);
+          }
+          else {
+            if (res.data.error.errorCodes) {
+              const output = res.data.error.errorCodes;
+
+              const outputArray = output
+                .split(",")
+                .map((item) => parseInt(item.trim()));
+
+              const errorMessages = [];
+              outputArray.forEach((code) => {
+                const error = errorCodes.find(
+                  (entry) => Object.keys(entry)[0] === code.toString()
+                );
+                if (error) {
+                  errorMessages.push(Object.values(error)[0]);
+                } else {
+                  errorMessages.push(
+                    `Error message for code ${code} not found`
+                  );
+                }
+              });
+              setOpenError(true);
+              setErrorMsg(errorMessages);
+            }
+          }
+        }
       })
       .catch((err) => console.error(err));
   };
@@ -93,36 +108,32 @@ const ImvMovement = ({ state }) => {
     e.preventDefault();
     console.log(formData)
   };
-  const [documentDate, setDocumentDate] = useState("");
 
-  const handleDocInput = (e) => {
-    const { name, value } = e.target;
-    if (name === "transDocDate") {
-      // Convert the selected date to a Date object
-      const parsedDate = new Date(value);
-      // Format the date as "day/month/year"
+  const [documentDate, setDocumentDate] = useState("");
+  const handleTransInput = (e) => {
+    if (e.target.name === "transDocDate") {
+      const parsedDate = new Date(e.target.value);
+      setDocumentDate(e.target.value);
       const day = parsedDate.getDate().toString().padStart(2, "0");
       const month = (parsedDate.getMonth() + 1).toString().padStart(2, "0");
       const year = parsedDate.getFullYear();
+  
       const formattedDate = `${day}/${month}/${year}`;
       setFormData((prevState) => ({
         ...prevState,
-        [name]: formattedDate,
+     
+          [e.target.name]: formattedDate,    
       }));
     } else {
       setFormData((prevState) => ({
         ...prevState,
-        [name]: value,
-      }));
+          [e.target.name]: e.target.value,    
+     }));
     }
   };
   
-  
   function getSteps() {
-    return [
-      "",
-     
-    ];
+    return [ ""];
   }
 
   console.log(formData);
@@ -357,6 +368,8 @@ const ImvMovement = ({ state }) => {
         return "unknown step";
     }
   }
+
+
   return (
     <div style={{ background: "#F8F6F2", padding: "0" }}>
       <Stepper alternativeLabel activeStep={activeStep}>
@@ -364,10 +377,7 @@ const ImvMovement = ({ state }) => {
           const labelProps = {};
           const stepProps = {};
 
-          return (
-            <Step {...stepProps} key={index}>
-            </Step>
-          );
+          return <Step {...stepProps} key={index}></Step>;     
         })}
       </Stepper>
 
@@ -382,15 +392,7 @@ const ImvMovement = ({ state }) => {
               {getStepContent(activeStep)}
             </form>
           }
-         {/* <Button
-            style={{ marginBottom: "20px", marginLeft: "20px" }}
-            className={classes.button}
-            disabled={activeStep === 0}
-            onClick={handleBack}
-          >
-            back
-        </Button>*/}
-
+    
           <Button
             style={{ marginBottom: "20px", marginLeft: "30px" }}
             className={classes.button}

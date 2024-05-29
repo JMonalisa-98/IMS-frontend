@@ -85,6 +85,7 @@ function GstCards() {
     addressLine2: "",
     addressLine3: "",
   });
+
   const [eWayBillDetails, setEWayBillDetails] = useState(false);
   const [openRejectEWayBill, setOpenRejectEWayBill] = useState(false);
   const [updateTransporter, setUpdateTransporter] = useState(false);
@@ -105,6 +106,13 @@ function GstCards() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+  };
+
+  const handleCancelEBill = (e) => {
+    setFormDataCancelEBill({
+      ...formDataCancelEBill,
+      [e.target.name]: e.target.value,
+    });
   };
 
   const handleSubmitCancelEBill = async () => {
@@ -152,13 +160,6 @@ function GstCards() {
         }
       })
       .catch((err) => console.error(err));
-  };
-
-  const handleCancelEBill = (e) => {
-    setFormDataCancelEBill({
-      ...formDataCancelEBill,
-      [e.target.name]: e.target.value,
-    });
   };
 
   const handleRejectEBill = (e) => {
@@ -474,39 +475,94 @@ const handleSubmitEwayGenConsigner = async () => {
       .catch((err) => console.error(err));
   };
 
-  const handleSubmitGetConsEwayBill = async () => {
-    try {
-      const result = await axios.post(
-        `http://localhost:3500/api/eway/enhanced/details`,
-        { formData: formDataUpdateGetConsEwayBill.tripSheetNo, auth: state }
-      );
-      console.log(result.data);
-    } catch (error) {
-      console.error("Failed to get E-Way bill details", error);
-    }
-  };
-  
   const handleSubmitEwayBillByDate = async () => {
-    try {
-      const result = await axios.post(
-        `http://localhost:3500/api/eway/enhanced/bills-by-date`,
+   await axios.post(
+        `http://localhost:3500/get/api/eway/enhanced/bills-by-date`,
         { formData: formDataEwayBillByDate, auth: state }
-      );
-      console.log(result.data);
-    } catch (error) {
-      console.error("Failed to get E-way bill by date", error);
-    }
+      ).then((res) => {
+        if (res.data.ErrorDetails) {
+          if (res.data.ErrorDetails[0]?.ErrorMessage === "Invalid Token") {
+            navigation("/gst/e-invoice-auth");
+          } else {
+            alert(res.data.ErrorDetails[0]?.ErrorMessage);
+          }
+        } else {
+          if (res.data.AckDt) {
+            console.log(res.data);
+          } else {
+            if (res.data.error.errorCodes) {
+              const output = res.data.error.errorCodes;
+
+              const outputArray = output
+                .split(",")
+                .map((item) => parseInt(item.trim()));
+
+              const errorMessages = [];
+              outputArray.forEach((code) => {
+                const error = errorCodes.find(
+                  (entry) => Object.keys(entry)[0] === code.toString()
+                );
+                if (error) {
+                  errorMessages.push(Object.values(error)[0]);
+                } else {
+                  errorMessages.push(
+                    `Error message for code ${code} not found`
+                  );
+                }
+              });
+              setOpenError(true);
+              setErrorMsg(errorMessages);
+              setEwayBillByDate(false)
+            }
+          }
+        }
+      })
+      .catch((err) => console.error(err));
   };
+
   const handleSubmitEwayBillRejectedByDate = async () => {
-    try {
-      const result = await axios.post(
-        `http://localhost:3500/api/eway/enhanced/bills-rejected-by-date`,
+   await axios.post(
+        `http://localhost:3500/get/api/eway/enhanced/bills-rejected-by-date`,
         { formData: formDataEwayBillRejectedByDate, auth: state }
-      );
-      console.log(result.data);
-    } catch (error) {
-      console.error("Failed to get E-way bill rejected by date", error);
-    }
+      ).then((res) => {
+        if (res.data.ErrorDetails) {
+          if (res.data.ErrorDetails[0]?.ErrorMessage === "Invalid Token") {
+            navigation("/gst/e-invoice-auth");
+          } else {
+            alert(res.data.ErrorDetails[0]?.ErrorMessage);
+          }
+        } else {
+          if (res.data.AckDt) {
+            console.log(res.data);
+          } else {
+            if (res.data.error.errorCodes) {
+              const output = res.data.error.errorCodes;
+
+              const outputArray = output
+                .split(",")
+                .map((item) => parseInt(item.trim()));
+
+              const errorMessages = [];
+              outputArray.forEach((code) => {
+                const error = errorCodes.find(
+                  (entry) => Object.keys(entry)[0] === code.toString()
+                );
+                if (error) {
+                  errorMessages.push(Object.values(error)[0]);
+                } else {
+                  errorMessages.push(
+                    `Error message for code ${code} not found`
+                  );
+                }
+              });
+              setOpenError(true);
+              setErrorMsg(errorMessages);
+              setEwayBillRejectedByDate(false)
+            }
+          }
+        }
+      })
+      .catch((err) => console.error(err));
   };
 
   const handleEwayBillByDate = (e) => {
@@ -528,12 +584,7 @@ const handleSubmitEwayGenConsigner = async () => {
       [e.target.name]: e.target.value,
     });
   };
-  const handleGenConsEwayBill = (e) => {
-    setFormDataEWayBillDetails({
-      ...formDataEWayBillDetails,
-      [e.target.name]: e.target.value,
-    });
-  };
+  
 
   
 
@@ -569,6 +620,8 @@ const handleSubmitEwayGenConsigner = async () => {
           : "",
     });
   }, [formDataExtendValidity.transMode]);
+
+  console.log(state)
 
   return (
     <div>
@@ -1286,56 +1339,7 @@ const handleSubmitEwayGenConsigner = async () => {
               </div>
             </div>
           ) : null}
-          {genConsEwayBill ? (
-            <div className="modal-ka-baap">
-              <div
-                className="add-item-modal-in"
-                style={{ width: "35%", height: "auto" }}
-              >
-                <div className="add-item-modal-top d-flex align-items-center justify-content-between">
-                  <div className="fw-bold fs-5">Get Consolidated Eway Bill</div>
-                  <IoMdCloseCircleOutline
-                    className="fs-5 close-modal-in"
-                    style={{ cursor: "pointer" }}
-                    onClick={() => {
-                      setGenConsEwayBill(false);
-                    }}
-                  />
-                </div>
-
-                <form className="row g-3 mt-5" onSubmit={handleSubmit}>
-                  <input
-                    type="text"
-                    className="form-control form-control-lg"
-                    value={formDataUpdateGetConsEwayBill.tripSheetNo}
-                    placeholder="Trip Sheet Number"
-                    name="tripSheetNo"
-                    onChange={(e) => handleGenConsEwayBill(e)}
-                  />
-                  <div className="d-flex align-items-center justify-content-center">
-                    <div className="text-center mt-3">
-                      <a
-                        onClick={handleSubmitGetConsEwayBill}
-                        className="btn btn-lg btn-block btn-danger lift text-uppercase"
-                      >
-                        GET
-                      </a>
-                    </div>
-                    <div className="text-center mt-3">
-                      <a
-                        className="btn btn-lg btn-block btn-outline-secondary lift text-uppercase"
-                        onClick={() => {
-                          setGenConsEwayBill(false);
-                        }}
-                      >
-                        Back
-                      </a>
-                    </div>
-                  </div>
-                </form>
-              </div>
-            </div>
-          ) : null}
+         
           <SideBar navClick={navClick} side={side} />
           {/* start: body area */}
           <div className="wrapper">
@@ -1377,7 +1381,7 @@ const handleSubmitEwayGenConsigner = async () => {
 
                 <div
                   className=" mt-4 card-items"
-                  onClick={() => nav("/gst/e-way-update", { state: state })}
+                  onClick={() => nav("/gst/e-way-update-vehicle-number", { state: state })}
                 >
                   <div className="bill-img">
                     <img src={update} alt="" />
@@ -1451,13 +1455,15 @@ const handleSubmitEwayGenConsigner = async () => {
                     Get Other Party E-Way Bill Details
                   </div>
                 </div>
-                <div className=" mt-4 card-items">
+                <div className=" mt-4 card-items" onClick={() =>
+                    nav("/gst/imv-movement", { state: state })
+                  }>
                   <div className="bill-img">
                     <img src={initiate} alt="" />
                   </div>
-                  <Link to="/gst/imv-movement" className="card-heading">
+                  <div className="card-heading">
                     Initiate Multi Vehicle Movement
-                  </Link>
+                  </div>
                 </div>
 
                 <div

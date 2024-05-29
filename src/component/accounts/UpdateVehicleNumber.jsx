@@ -1,17 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import "../../Styles.css";
-import { useLocation, useNavigate } from "react-router-dom";
-import DeleteIcon from "@mui/icons-material/Delete";
-import { IconButton } from "@mui/material";
-import AddCircleOutlineOutlinedIcon from "@mui/icons-material/AddCircleOutlineOutlined";
+import { useNavigate } from "react-router-dom";
+import { errorCodes } from "./ErrorCodes";
 
 import {
   Typography,
-  TextField,
   Button,
   Stepper,
   Step,
-  StepLabel,
 } from "@material-ui/core";
 import axios from "axios";
 
@@ -23,7 +19,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const UpdateForm = ({ state }) => {
+const UpdateVehicleNumber = ({ state, setOpenError, setErrorMsg }) => {
   const classes = useStyles();
   const [activeStep, setActiveStep] = useState(0);
   const steps = getSteps();
@@ -57,7 +53,7 @@ const UpdateForm = ({ state }) => {
 
   const handleSave = async () => {
     await axios
-      .post(`http://localhost:3500/update/vehiclenumber`, {
+      .post(`http://localhost:3500/api/eway/update-partb/vehicle-number`, {
         formData: formData,
         auth: state,
       })
@@ -68,18 +64,34 @@ const UpdateForm = ({ state }) => {
           } else {
             console.log(res.data.ErrorDetails[0]?.ErrorMessage);
           }
-        }
-        //  else {
-        //   if (res.data.AckDt) {
-        //     saveIrn(
-        //       res.data.AckDt,
-        //       res.data.AckNo,
-        //       res.data.Irn,
-        //       res.data.SignedInvoice,
-        //       res.data.SignedQRCode
-        //     );
-        //   }
-        // }
+        } else {
+          if (res.data.AckDt) {
+          } else {
+            if (res.data.error.errorCodes) {
+              const output = res.data.error.errorCodes;
+
+              const outputArray = output
+                .split(",")
+                .map((item) => parseInt(item.trim()));
+
+              const errorMessages = [];
+              outputArray.forEach((code) => {
+                const error = errorCodes.find(
+                  (entry) => Object.keys(entry)[0] === code.toString()
+                );
+                if (error) {
+                  errorMessages.push(Object.values(error)[0]);
+                } else {
+                  errorMessages.push(
+                    `Error message for code ${code} not found`
+                  );
+                }
+              });
+              setOpenError(true);
+              setErrorMsg(errorMessages);
+            }
+          }
+        }   
       })
       .catch((err) => console.error(err));
   };
@@ -87,27 +99,26 @@ const UpdateForm = ({ state }) => {
     e.preventDefault();
     console.log(formData);
   };
-  const [documentDate, setDocumentDate] = useState("");
 
+  const [documentDate, setDocumentDate] = useState("");
   const handleDocInput = (e) => {
-    const { name, value } = e.target;
-    if (name === "transDocDate") {
-      setDocumentDate(value);
-      // Convert the selected date to a Date object
-      const parsedDate = new Date(value);
-      // Format the date as "day/month/year"
+    if (e.target.name === "transDocDate") {
+      const parsedDate = new Date(e.target.value);
+      setDocumentDate(e.target.value);
       const day = parsedDate.getDate().toString().padStart(2, "0");
       const month = (parsedDate.getMonth() + 1).toString().padStart(2, "0");
       const year = parsedDate.getFullYear();
+
       const formattedDate = `${day}/${month}/${year}`;
       setFormData((prevState) => ({
         ...prevState,
-        [name]: formattedDate,
+
+        [e.target.name]: formattedDate,
       }));
     } else {
       setFormData((prevState) => ({
         ...prevState,
-        [name]: value,
+        [e.target.name]: e.target.value,
       }));
     }
   };
@@ -220,14 +231,14 @@ const UpdateForm = ({ state }) => {
             </div>
             <div className="data-input-fields">
               <div class="mb-2 w-50">
-                <label for="reasonCode" class="form-label">
-                  Reason Code **
+                <label for="reasonRem" class="form-label">
+                  Reason **
                 </label>
                 <select
                   className="form-select"
-                  id="reasonCode"
-                  name="reasonCode"
-                  value={formData.reasonCode}
+                  id="reasonRem"
+                  name="reasonRem"
+                  value={formData.reasonRem}
                   onChange={handleInputChange}
                 >
                   <option value="1">Due to Break Down</option>
@@ -238,14 +249,14 @@ const UpdateForm = ({ state }) => {
               </div>
               <div class="mb-2 w-50">
                 <label for="Dt" class="form-label">
-                  Reason **
+                  Reason Code**
                 </label>
                 <input
-                  type="text"
+                  type="number"
                   class="form-control"
-                  id="reasonRem"
-                  name="reasonRem"
-                  value={formData.reasonRem}
+                  id="reasonCode"
+                  name="reasonCode"
+                  value={formData.reasonCode}
                   onChange={handleInputChange}
                 />
               </div>
@@ -370,4 +381,4 @@ const UpdateForm = ({ state }) => {
   );
 };
 
-export default UpdateForm;
+export default UpdateVehicleNumber;

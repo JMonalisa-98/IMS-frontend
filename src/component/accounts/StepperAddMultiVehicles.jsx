@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 
-import InvForm from "./InvForm";
 import { CssBaseline, Container, Paper, Box } from "@material-ui/core";
 import SideBar from "../SideBar";
 import NavBar from "../NavBar";
@@ -16,7 +15,8 @@ function StepperAddMultiVehicles() {
     const [side, setSide] = useState(false);
     const [navClick, setNavClick] = useState(false);
     const navigation = useNavigate();
-  
+    const [openError, setOpenError] = useState(false);
+    const [errorMsg, setErrorMsg] = useState([]);
     const { state } = useLocation();
   
     
@@ -64,6 +64,60 @@ function StepperAddMultiVehicles() {
       </div>
     ) : (
       <>
+        {openError ? (
+            <div className="modal-ka-baap">
+              <div
+                className="add-item-modal-in"
+                style={{ width: "30%", height: "auto" }}
+              >
+                <div className="add-item-modal-top d-flex align-items-center justify-content-between">
+                  <div className="fw-bold fs-5">Error Messages</div>
+                  <IoMdCloseCircleOutline
+                    className="fs-5 close-modal-in"
+                    style={{ cursor: "pointer" }}
+                    onClick={() => {
+                      setOpenError(false);
+                      setErrorMsg([]);
+                    }}
+                  />
+                </div>
+                      
+                <div className="row g-3 mt-3 mb-5">
+                  <ul>
+                    {errorMsg.map((item) => (
+                      <li style={{ color: "red" }} key={item}>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="col-12 text-center mt-3">
+                    <span
+                      className="text-muted"
+                      style={{
+                        cursor: "pointer",
+                        position: "absolute",
+                        bottom: "20px",
+                        left: "20px",
+                        background: "black",
+                        padding: "5px 10px",
+                        borderRadius: "5px",
+                        fontWeight: "600",
+                      }}
+                    >
+                       <a
+                        onClick={() => {
+                          setOpenError(false);
+                          setErrorMsg([]);
+                        }}
+                      >
+                        Back
+                      </a>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : null}
         <div id="stepper">
           <div className="layout-1">
             <SideBar navClick={navClick} side={side} />
@@ -82,12 +136,10 @@ function StepperAddMultiVehicles() {
                     justifyContent: "space-between",
                   }}
                 >
-                  <span style={{ color: "black", fontSize: "20px" }}>
+              <span style={{ color: "black", fontSize: "20px" }}>
                 Add Multi vehicles
                   </span>
-                  <div style={{ display: "flex", gap: "10px" }}>
-                    
-                    
+                  <div style={{ display: "flex", gap: "10px" }}>          
                     <button
                       className="irn-btn"
                       style={{ background: "#938989" }}
@@ -97,14 +149,17 @@ function StepperAddMultiVehicles() {
                     >
                      Back
                     </button>
-                    {/* <button>Get IRN Details by Document Id</button> */}
-                  </div>
+                   </div>
                 </div>
                 <div>
                   <CssBaseline />
                   <Container component={Box} p={4}>
                     <Paper component={Box} p={3}>
-                      <AddMultiVehicles state={state} />
+                      <AddMultiVehicles 
+                        state={state} 
+                        setOpenError={setOpenError} 
+                        setErrorMsg={setErrorMsg}
+                      />
                     </Paper>
                   </Container>
                 </div>
@@ -118,4 +173,4 @@ function StepperAddMultiVehicles() {
   )
 }
 
-export default StepperAddMultiVehicles
+export default StepperAddMultiVehicles;
